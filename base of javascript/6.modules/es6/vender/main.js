@@ -1,5 +1,5 @@
 import { add } from "./add.js";
-console.log(add(1, 1));
+// console.log(add(1, 1));
 
 import square from "./square.js";
-console.log(square(3));
+// console.log(square(3));
