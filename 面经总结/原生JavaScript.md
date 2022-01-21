@@ -97,3 +97,171 @@ self.addEventListener("fetch", (e) => {
 });
 ```
 
+
+
+#### 0.1 + 0.2 === 0.3 吗？为什么
+
+不等，因为在进制转换和中会发生精度丢失。
+
+JavaScript 中用二进制的 64 位来存储一个 number 类型的数据，0.1 和 0.2，相加的时候，会先进行二进制的转换，因为二者转换成二进制之后都是无限循环，JS 的引擎会对其进行截断，这就会造成精度丢失，二者相加之后就不是 0.3 了
+
+
+
+#### JS数据类型
+
+基本类型：undefined，null，string，number，boolean，symbol，bigInt
+
+引用类型：object，对象子类型（array，function等）
+
+
+
+#### JS整数是怎么表示的
+
+通过 Number 类型来表示，遵循 IEEE 754 双精度浮点数标准，使用 64 位存储一个数字，能够安全存储 `-(2^53 - 1)` 到 `2^53 - 1 ` 之间的数值（包含边界值）
+
+安全存储是指能够准确区分两个不相同的值
+
+
+
+#### number 类型的存储空间是多大？如果后台发送了一个超出限制的数字怎么办？
+
+Number 类型可以安全存储的最大值就是 `2^53 - 1 `，如果超出这个值就不能正常显示，会被截断导致错误显示
+
+接收到一个超出这个限制的数字有两种解决方案：
+
+1. 存储为字符串
+2. 存储为 BigInt 类型
+
+
+
+#### 浅拷贝有什么方法
+
+```javascript
+// 对象
+let a = {age: 1};
+Object.assign({}, a);
+{...a};
+
+// 数组
+let x = [1,2,3];
+Array.from(x);
+// 还有 concat, slice, map, filter 这些不改变原数组的方法都可以
+Object.assign([], x);
+[...x];
+
+```
+
+
+
+#### 怎么遍历对象
+
+|                | for...in... | Object.keys | Object.entries | Object.getOwnPropertyNames | Object.getOwnPropertySymbols | Reflect.ownKeys |
+| :------------- | :---------: | :---------: | :------------: | :------------------------: | :--------------------------: | :-------------: |
+| 枚举属性       |     有      |     有      |       有       |             有             |              无              |       有        |
+| 非枚举属性     |     无      |     无      |       无       |             有             |              无              |       有        |
+| 原型属性       |     有      |     无      |       无       |             无             |              无              |       无        |
+| 是否包含Symbol |     无      |     无      |       无       |             无             |              有              |       有        |
+
+
+
+#### 怎么判断数据类型
+
+1. typeof
+2. instanceof
+3. Object.prototype.toStirng.call()
+4. isArray
+5. isNaN
+
+
+
+#### 手撕深拷贝
+
+一般的深拷贝可以用 JSON.parse(JSON.stringify()) 来解决
+
+但是有局限性：
+
+1. 无法识别 undefined
+2. 无法识别 Symbol
+3. 不能序列化函数
+4. 循环引用会报错
+
+```javascript
+// 完全版本，解决了：循环引用， 非JSON安全的数据类型，原型继承问题
+function deepClone(obj, cacheCurr = new WeakMap()) {
+    if([undefined, null].includes(obj)){
+        return obj
+    }
+    // 如果该对象已经创建好，则从缓存中获取直接返回
+    if (cacheCurr.has(obj)) return cacheCurr.get(obj);
+    // 通用的类型集合，方便后面统一处理:new obj.constructor(obj),所以该集合一定是要能够这样创建的才能放进来
+    const types = ['RegExp', 'Date', 'Set', 'Map', 'WeakMap', 'WeakSet'];
+    // 获取当前对象类型
+    let objDataType = Object.prototype.toString.call(obj).slice(8, -1);
+    // 对比当前类型是否在通用类型中，在则统一处理克隆。【较通用的处理方式】
+    if(types.includes(objDataType)) return new obj.constructor(obj);
+    // 创建克隆对象
+    let cloneObj = objDataType === 'Array' ? [] : {};
+    // 继承原型
+    if(obj){
+        Object.setPrototypeOf(cloneObj,Object.getPrototypeOf(obj));
+    }
+    // 普通引用类型及非引用类型克隆，Reflect.ownKeys能够获取自身所有属性【非枚举也可】
+    for(let key of Reflect.ownKeys(obj)) {
+        let value = obj[key];
+        let valueType = Object.prototype.toString.call(value).slice(8, -1);
+        // 引用类型处理
+        if(valueType === 'Object' || valueType === 'Array' || types.includes(valueType)) {
+            // 对引用类型进行递归进入当前级的下一级进行遍历
+            cloneObj[key] = deepClone(value, cacheCurr);
+            // 记录已创建引用
+            cacheCurr.set(obj, cloneObj);
+        } else { // 非引用类型处理
+            cloneObj[key] = value;
+        }
+    }
+    return cloneObj;
+}
+```
+
+
+
+
+
+#### 手撕 JSON.stringify
+
+```javascript
+function stringify(obj, cacheCurr = new WeakSet()){
+  const types = ['RegExp', 'Set', 'Map', 'WeakMap', 'WeakSet'];
+  if(cacheCurr.has(obj) || obj === undefined || ['symbol', 'function', 'bigint'].includes(typeof obj)){
+    return
+  }
+  if(obj === null){
+    return 'null'
+  }
+  if(['string', 'boolean', 'number'].includes(typeof obj)){
+    return `"${String(obj)}"`
+  }
+  // 获取当前对象类型
+  let objDataType = Object.prototype.toString.call(obj).slice(8, -1);
+  if(objDataType === 'Date'){
+    return `"${obj.toISOString()}"`
+  }
+  if(types.includes(objDataType)){
+    return '{}'
+  }
+  cacheCurr.add(obj)
+  let str = '{'
+  for(let [key, value] of Object.entries(obj)){
+    let stringVal = stringify(value, cacheCurr)
+    if(stringVal){
+      str += `"${key}":${stringVal},`
+    }
+  }
+  if(str.endsWith(',')){
+    str = str.slice(0, -1)
+  }
+  str += '}'
+  return str
+}
+```
+
