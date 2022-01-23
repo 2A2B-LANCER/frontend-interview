@@ -69,11 +69,13 @@ function getPays(hard, money, ability){
 
 #### 题目二
 
+时间限制： 3000MS 内存限制： 589824KB
+
 贩卖机只支持硬币支付，且收退都只支持 10,50,100三种面额
 
 一次购买只能出一瓶可乐，且投钱和找零都遵循优先使用大钱的原则
 
-需要购买的可乐数量是 m
+需要购买的可乐数量是 m （最大的数量级为 10^18）
 
 其中手头有的 10 元 a 张；50 元 b 张；100 元 c 张
 
@@ -81,7 +83,78 @@ function getPays(hard, money, ability){
 
 请计算出需要投入硬币的次数？
 
-1:23:34
+
+
+ 分析：这道题看完之后就知道不能递归模拟这个过程了，因为 m 的最大数量级是 10^18，远超 10^8，所以想其他的办法吧
+
+并且，没办法动态规划，因为买的过程不能决策，规定投钱和找零都是大钱优先了，所以参数定下来之后，整个过程的细节其实就都已经定下来了
+
+别的办法就只能想 钱 和 单价之间怎么操作了，面值很少，3种，这个应该是可以进行模拟的，大钱优先，那我们可以先耗尽尽可能大的面值，直到这种面值不能再单独用来买可乐，注意
+
+1. 如果可乐的单价比某一面值大，那只用这种面值购买可能会出现余数，这时候就要余数就变成了历史遗留问题，因为大数优先
+2. 当我按照大数优先的规则使用到某一面值为主要钱的时候，比这个面值大于等于的面值钱，不可能会被找回，因为我买的时候就不会付超过当前面值 1 倍的额外钱数
+3. 历史遗留问题可能会跨过某一面值，将这一面值的钱和数量也化为历史遗留问题
+
+这样的话，就确定下来模拟流程了
+
+1. 面值从大到小开始支付，当前面值的第一瓶可乐配合历史遗留问题进行购买
+   1. 当前面值能和历史遗留凑出一瓶可乐，历史遗留重复为 0，还需要购买的可乐数量 - 1；然后把找的钱加入到对应面值的数量当中
+   2. 凑不出一瓶可乐，当前面值和数量加入到历史遗留
+2. 开始计算当前面值能购买几瓶可乐
+   1. 当前面值几张才能购买一瓶可乐
+   2. 只用当前面值能购买几瓶可乐（这个要和还需购买的可乐数量取最小）；更新还需购买的可乐数量
+   3. 一和二就能算出只用当前面值需要投入的硬币次数了，加入到总次数当中；
+   4. 一和二还能还能算出当前面值有几张成为了历史遗留，加入到历史遗留中
+   5. 计算找零，加入到对应的面值数量当中
+3. 循环以上步骤面值种类次
+4. 如果最后能够买完目标数量的可乐，返回投币次数，否则返回 -1
+
+```javascript
+function getRest(faceValue, nums, i, oneTimeRest, times){
+  for(; i < 3; i++){
+    nums[i] += Math.floor(oneTimeRest / faceValue[i]) * times
+    oneTimeRest %= faceValue[i]
+  }
+}
+
+function buyColas(a, b, c, x, m){
+  let faceValue = [100, 50, 10],
+      nums = [c, b, a],
+      preRestMoney = 0,
+      preRestNum = 0,
+      times = 0
+  for(let i=0; i<3; i++){
+    // 先解决历史遗留问题，把更大的面值耗尽
+    let preRestMoneyNeedCur = Math.ceil((x - preRestMoney) / faceValue[i])
+    // 两种情况
+    if(nums[i] >= preRestMoneyNeedCur){
+      // 1. 当前面值的钱数，能和历史遗留凑出一瓶可乐
+      getRest(faceValue, nums, i + 1, (preRestMoney + faceValue[i] * preRestMoneyNeedCur) - x, 1)
+      preRestMoney = 0
+      preRestNum = 0
+      times += preRestNum + preRestMoneyNeedCur
+      nums[i] -= preRestMoneyNeedCur
+      m--
+    }else{
+      // 2. 凑不出一瓶
+      preRestMoney += faceValue[i] * nums[i]
+      preRestNum += nums[i]
+      continue
+    }
+    let oneColaNeedCur = Math.ceil(x / faceValue[i]),
+        colasOfCur = Math.min(m, Math.floor(nums[i] / oneColaNeedCur)),
+        restOfOneCola = nums[i] * oneColaNeedCur - x
+    
+    getRest(faceValue, nums, i + 1, restOfOneCola, colasOfCur)
+    times += oneColaNeedCur * colasOfCur
+    m -= colasOfCur
+    nums[i] -= oneColaNeedCur * colasOfCur
+    preRestMoney = nums[i] * faceValue[i]
+    preRestNum = nums[i]
+  }
+  return m === 0 ? times : -1
+}
+```
 
 
 
@@ -177,6 +250,96 @@ box.receive(11,"K"); // 11 12 13 -> print, trigger is 11
 
 
 
+#### 题目四
+
+现在有司机 N * 2 人，调度中心会把所有司机平分给 A、B两个区域
+
+第 i 个司机去 A 可得收益为 `income[i][0]`
+
+第 i 个司机去 B 可得收益为 `income[i][1]`
+
+返回所有调度方案中能使所有司机总收入最高的方案，是多少钱
+
+
+
+分析：很明显，从左到右的线性模型
+
+```javascript
+// 暴力递归
+function getMaxIn(income, n, index, aRest){
+  if(index === n << 1){
+    return 0
+  }
+  let bRest = (n << 1) - index - aRest,
+      m1 = 0,
+      m2 = 0
+  if(aRest > 0){
+    m1 = income[index][0] + getMaxIn(income, n, index + 1, aRest - 1)
+  }
+  if(bRest > 0){
+    m2 = income[index][1] + getMaxIn(income, n, index + 1, aRest)
+  }
+  return Math.max(m1, m2)
+}
+
+function maxIncome(income){
+  if(income && income.length % 2 === 0){
+    return getMaxIn(income, income.length >> 1, 0, income.length >> 1)
+  }else{
+    return 0
+  }
+}
+```
+
+
+
+```javascript
+// 动态规划 + 原地更新
+function maxIncome(income){
+  if(!income || income.length % 2 !== 0){
+    return 0
+  }
+  const len = income.length,
+        dp = new Array((len >> 1) + 1).fill(0)
+  for(let index = len - 1; index >= 0; index--){
+    for(let aRest = (len >> 1); aRest >= 0; aRest--){
+      let bRest = len - index - aRest,
+          m1 = 0,
+          m2 = 0
+      if(aRest > 0){
+        m1 = income[index][0] + dp[aRest - 1]
+      }
+      if(bRest > 0){
+        m2 = income[index][1] + dp[aRest]
+      }
+      dp[aRest] = Math.max(m1, m2)
+    } 
+  }
+  return dp[len >> 1]
+}
+```
+
+
+
+
+
+#### 题目五
+
+现有哈希表，put() 和 get() 时间复杂度都是 O(1)，请新增一个方法，setAll(value)，作用是把所有的值都置为 value，并维持时间复杂度仍为 O(1)
+
+
+
+分析：想要时间复杂度维持在 O(1)，那直接改哈希表的数据是行不通的，那就只能 “卡BUG” 了
+
+封装一个类，其内部有一个哈希表，它来维持 put() 和 get() 方法的时间复杂度，但是我们插入数据的时候，值要封装为数据和插入时间戳的组合类型；
+
+然后维护几个内部变量：
+
+1. all：存储最近一次 setAll() 执行的时候传入的参数 value
+2. setAllTime：存储最近一次 setAll() 执行的时间戳
+
+当执行 get() 方法的时候，我们要比较 哈希表内取出来的时间戳和 setAllTime，谁更近用谁，这样就实现了时间复杂度仍为 O(1)
+
 
 
 #### 题目六
@@ -244,20 +407,5 @@ function minLengthForSort(arr){
 
 
 
-#### 数据结构设计
 
-现有哈希表，put() 和 get() 时间复杂度都是 O(1)，请新增一个方法，setAll(value)，作用是把所有的值都置为 value，并维持时间复杂度仍为 O(1)
-
-
-
-分析：想要时间复杂度维持在 O(1)，那直接改哈希表的数据是行不通的，那就只能 “卡BUG” 了
-
-封装一个类，其内部有一个哈希表，它来维持 put() 和 get() 方法的时间复杂度，但是我们插入数据的时候，值要封装为数据和插入时间戳的组合类型；
-
-然后维护几个内部变量：
-
-1. all：存储最近一次 setAll() 执行的时候传入的参数 value
-2. setAllTime：存储最近一次 setAll() 执行的时间戳
-
-当执行 get() 方法的时候，我们要比较 哈希表内取出来的时间戳和 setAllTime，谁更近用谁，这样就实现了时间复杂度仍为 O(1)
 
