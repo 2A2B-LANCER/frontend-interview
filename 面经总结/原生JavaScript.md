@@ -1,5 +1,9 @@
 #### Array 的方法
 
+------
+
+
+
 | 改变原数组                                                   | 不改变原数组                                                 | 功能性方法                                                   |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | forEach()，对所有元素执行回调函数（适用于不改变原数组，利用原数组做事情） | map()，对所有元素执行回调函数，并把每次的返回值组成新数组返回（适用于以原数组为原型，生成一个新的数组） | keys()，返回一个包含数组中每个索引键的**Array Iterator**对象 |
@@ -20,6 +24,10 @@
 
 #### ES6新特性有哪些
 
+------
+
+
+
 1. const/let
 2. Obejct.defineProperty
 3. 模板字符串
@@ -36,6 +44,10 @@
 
 
 #### 缓存
+
+------
+
+
 
 |              | cookie                                                       | localStorage                                  | sessionStorage                        | indexDB                                  |
 | ------------ | ------------------------------------------------------------ | --------------------------------------------- | :------------------------------------ | ---------------------------------------- |
@@ -100,6 +112,8 @@ self.addEventListener("fetch", (e) => {
 
 #### 0.1 + 0.2 === 0.3 吗？为什么
 
+------
+
 不等，因为在进制转换和中会发生精度丢失。
 
 JavaScript 中用二进制的 64 位来存储一个 number 类型的数据，0.1 和 0.2，相加的时候，会先进行二进制的转换，因为二者转换成二进制之后都是无限循环，JS 的引擎会对其进行截断，这就会造成精度丢失，二者相加之后就不是 0.3 了
@@ -107,6 +121,8 @@ JavaScript 中用二进制的 64 位来存储一个 number 类型的数据，0.1
 
 
 #### JS数据类型
+
+------
 
 基本类型：undefined，null，string，number，boolean，symbol，bigInt
 
@@ -116,6 +132,8 @@ JavaScript 中用二进制的 64 位来存储一个 number 类型的数据，0.1
 
 #### JS整数是怎么表示的
 
+------
+
 通过 Number 类型来表示，遵循 IEEE 754 双精度浮点数标准，使用 64 位存储一个数字，能够安全存储 `-(2^53 - 1)` 到 `2^53 - 1 ` 之间的数值（包含边界值）
 
 安全存储是指能够准确区分两个不相同的值
@@ -123,6 +141,8 @@ JavaScript 中用二进制的 64 位来存储一个 number 类型的数据，0.1
 
 
 #### number 类型的存储空间是多大？如果后台发送了一个超出限制的数字怎么办？
+
+------
 
 Number 类型可以安全存储的最大值就是 `2^53 - 1 `，如果超出这个值就不能正常显示，会被截断导致错误显示
 
@@ -134,6 +154,10 @@ Number 类型可以安全存储的最大值就是 `2^53 - 1 `，如果超出这�
 
 
 #### 浅拷贝有什么方法
+
+------
+
+
 
 ```javascript
 // 对象
@@ -154,6 +178,10 @@ Object.assign([], x);
 
 #### 怎么遍历对象
 
+------
+
+
+
 |                | for...in... | Object.keys | Object.entries | Object.getOwnPropertyNames | Object.getOwnPropertySymbols | Reflect.ownKeys |
 | :------------- | :---------: | :---------: | :------------: | :------------------------: | :--------------------------: | :-------------: |
 | 枚举属性       |     有      |     有      |       有       |             有             |              无              |       有        |
@@ -165,6 +193,10 @@ Object.assign([], x);
 
 #### 怎么判断数据类型
 
+------
+
+
+
 1. typeof
 2. instanceof
 3. Object.prototype.toStirng.call()
@@ -174,6 +206,8 @@ Object.assign([], x);
 
 
 #### 手撕深拷贝
+
+------
 
 一般的深拷贝可以用 JSON.parse(JSON.stringify()) 来解决
 
@@ -228,6 +262,10 @@ function deepClone(obj, cacheCurr = new WeakMap()) {
 
 #### 手撕 JSON.stringify
 
+------
+
+
+
 ```javascript
 function stringify(obj, cacheCurr = new WeakSet()){
   const types = ['RegExp', 'Set', 'Map', 'WeakMap', 'WeakSet'];
@@ -263,4 +301,97 @@ function stringify(obj, cacheCurr = new WeakSet()){
   return str
 }
 ```
+
+
+
+#### 事件分派机制
+
+------
+
+##### 事件流
+
+事件流包含三个阶段
+
+1. 捕获阶段：事件对象从 window 向目标传播
+2. 目标阶段：事件对象（event）到达事件对象的事件目标（event.target），如果事件类型表明事件没有冒泡（event.bubbles === false），就在该阶段完成后停止
+3. 冒泡阶段：事件对象从 目标向 window 传播
+
+| 方法/属性                        | 作用                                                         |
+| -------------------------------- | ------------------------------------------------------------ |
+| event.stopPropagation()          | 停止冒泡（不推荐使用）                                       |
+| event.stopImmediatePropagation() | 该方法执行后，其后面的事件处理程序都会停止执行（不止停止冒泡） |
+| event.target                     | 引发事件的层级最深的元素                                     |
+| event.currentTarget (= this)     | 处理事件的当前元素（具有处理程序的元素）                     |
+| event.eventPhase                 | 当前阶段（capturing=1，target=2，bubbling=3）                |
+
+
+
+##### 事件如何实现
+
+基于发布订阅模式
+
+在浏览器加载的时候会读取事件相关的代码，但是只有实际等到具体的事件触发的时候才会执行
+
+**对于目标事件来说，目标阶段和冒泡阶段无差别**
+
+| 方法     | 形式                                                         | 执行阶段                                                     | 注意                                                         |
+| -------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| HTML特性 | `<input type="button" onclick="countRabbits()"* value="Count rabbits!">` | 冒泡阶段                                                     | 该形式的方法需要有括号；优先执行（无关定义顺序）             |
+| DOM属性  | `elem.onclick = function`                                    | 冒泡阶段                                                     | 该形式应该是函数声明，不应该有括号；实际上与HTML 特性相同；所以该形式的定义会覆盖前者；可以通过 `elem.onclick = null` 移除 |
+| DOM2     | `element.addEventListener(event, handler[, options]);`       | useCapture = true（捕获阶段）；useCapture = false（冒泡阶段） | useCapture可以改变该形式定义事件的执行阶段                   |
+
+完整的事件发生顺序是这样的：
+
+- 事件从文档根节点向下移动到 `event.target`，并在途中调用分配了 `addEventListener(..., true)` 的处理程序（`true` 是 `{capture: true}` 的一个简写形式）。
+- 然后，在目标元素自身上调用处理程序。
+- 然后，事件从 `event.target` 冒泡到根，调用使用 `on<event>`、HTML 特性（attribute）和没有第三个参数的，或者第三个参数为 `false/{capture:false}` 的 `addEventListener` 分配的处理程序。
+
+
+
+##### 事件委托
+
+> 如果我们有许多以类似方式处理的元素，那么就不必为每个元素分配一个处理程序 —— 而是将单个处理程序放在它们的共同祖先上
+
+简单来说就是把 事件处理程序添加到容器上（共同祖先，比如 `document`）,然后通过 `event.target` （比如使用 data 属性）来区分不同的特定元素，执行不同的具体行为
+
+```html
+Counter: <input type="button" value="1" data-counter>
+One more counter: <input type="button" value="2" data-counter>
+
+<script>
+  document.addEventListener('click', function(event) {
+
+    if (event.target.dataset.counter != undefined) { // 如果这个特性存在...
+      event.target.value++;
+    }
+
+  });
+</script>
+```
+
+
+
+##### 默认行为
+
+- 浏览器的默认行为有很多，当我们希望按照需求定制一些自己的行为的时候，`event.preventDefault()` 就派上用场了，它可以阻止默认行为的执行（或者 `return false` 不过这样只能阻止 HTML 特性的事件）
+- `addEventListener` 的 `passive: true` 选项会明确告诉浏览器：处理程序不会取消默认事件
+- 如果默认行为被阻止，`event.defaultPrevented` 的值会变成 `true`，否则为 `false`。
+
+
+
+#### new 发生了什么
+
+------
+
+- 创造一个全新的对象
+
+- 这个对象会被执行 [[Prototype]] 连接，将这个新对象的 [[Prototype]] 链接到这个构造函数.prototype 所指向的对象
+- 这个新对象会绑定到函数调用的 this
+- 如果函数没有返回其他对象，那么 new 表达式中的函数调用会自动返回这个新对象
+
+#### new 一个构造函数，如果函数返回 `return {}` 、 `return null` ， `return 1` ， `return true` 会发生什么情况？
+
+------
+
+如果函数返回一个对象，那么new 这个函数调用返回这个函数的返回对象，否则返回 new 创建的新对象
 
