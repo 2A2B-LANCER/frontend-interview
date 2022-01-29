@@ -181,6 +181,81 @@ var maxArea = function(height) {
 
 
 
+#### 题目五
+
+给定一个字符二维数组 matrix，在给定一个字符串 word
+
+可以从任何一个位置出发，向四个方向移动，能不能找到 word？
+
+```javascript
+matrix = [['a', 'b', 'z'],
+          ['c', 'd', 'o'],
+          ['f', 'e', 'o']]
+```
+
+设定一：可以走重复路的情况下，能不能找到
+
+比如 word = "zoooz" 可以，z -> o -> o -> o -> z，因为可以重复走
+
+设定二：不可以重复走
+
+比如 word = "zoooz" 不可以
+
+
+
+```javascript
+// 可以重复
+function findWord(matrix, word, row, col, index){
+  if(index === word.length){
+    return true
+  }
+  if(row < 0 ||
+    row >= matrix.length ||
+    col < 0 ||
+    col >= matrix[0].length ||
+    matrix[row][col] !== word[index]){
+    return false
+  }
+  let left = findWord(matrix, word, row, col - 1, index + 1),
+      up = findWord(matrix, word, row - 1, col, index + 1),
+      right = findWord(matrix, word, row, col + 1, index + 1),
+      down = findWord(matrix, word, row + 1, col, index + 1)
+  return left || up|| right || down
+}
+```
+
+
+
+
+
+```javascript
+// 不可以重复
+function findWord(matrix, word, row, col, index){
+  if(index === word.length){
+    return true
+  }
+  if(row < 0 ||
+    row >= matrix.length ||
+    col < 0 ||
+    col >= matrix[0].length ||
+    matrix[row][col] !== word[index]){
+    return false
+  }
+  let copy = matrix[i][j]
+  matrix[i][j] = 0
+  let left = findWord(matrix, word, row, col - 1, index + 1),
+      up = findWord(matrix, word, row - 1, col, index + 1),
+      right = findWord(matrix, word, row, col + 1, index + 1),
+      down = findWord(matrix, word, row + 1, col, index + 1)
+  matrix[i][j] = copy
+  return left || up || right || down
+}
+```
+
+
+
+
+
 #### 题目六
 
 给定一个矩阵 matrix，值可正可负可为零
@@ -199,4 +274,84 @@ var maxArea = function(height) {
 
 返回蛇能获得的最大增长值
 
-1:12：21
+
+
+分析：很经典的暴力递归转动态规划（能不能转不知道，可以去尝试）
+
+如果我们设计一个动态规划：`process(matrix, x, y, power，prefixSum)`
+
+-  `x，y` 表示蛇移动到的位置；
+- `power` 表示能力是否还可以用；
+- `prefixSum` 表示蛇从初始点到 (x, y) 已经积攒的增长值
+
+这个暴力递归的初始调用是蛇移动的起点
+
+如果我们这样设计暴力递归，即便最后可以转动态规划，dp 表也是四维的，这很明显不符合这道题的难度，所以这个方向不对
+
+如果我们能把 `prefixSum` 从参数中移除，`power` 只有两个值，这样就可以分化为两张二维表了，这样看来才是可行的方向
+
+那么如何把 增长值 从参数中移除呢？
+
+增长值是随着蛇移动变化的，这样的话，如果我们的暴力递归的初始调用是从结果开始，那 增长值就可以作为暴力递归的返回值传递下来，这样就降低了动态规划表的维度
+
+`process(matrix, x, y, power)`
+
+接着考虑，这个递归的调用是从后往前的，但是这样的话，含义上来讲，`power` 调用的权利是后者给前者的，这不符合逻辑
+
+但是 `power` 和 `prefixSum` 一样，也是动态变化的，那处理方法也一样，把它添加到返回值中去
+
+至此，我们就设计出了有可能可以改成动态规划的暴力递归
+
+`process(matrix, x, y)`
+
+返回值包含两部分，一个是未使用过能力的，一个是使用过能力的
+
+```javascript
+function process(matrix, row, col){
+  if(col === 0){
+    if(matrix[row][col] < 0){
+      return [-Infinity, -matrix[row][col]]
+    }else{
+      return [matrix[row][col], matrix[row][col]]
+    }
+  }
+  // 不是起始列
+  let [preNoUse, preUse] = process(matrix, row, col - 1)
+  if(row > 0){
+    let leftUp = process(matrix, row - 1, col - 1)
+    preNoUse = Math.max(preNoUse, leftUp[0])
+    preUse = Math.max(preUse, leftUp[1])
+  }
+  if(row < matrix.length - 1){
+    let leftDown = process(matrix, row + 1, col - 1)
+    preNoUse = Math.max(preNoUse, leftDown[0])
+    preUse = Math.max(preUse, leftDown[1])
+  }
+  let res = [-Infinity, -Infinity]
+  let noUse = matrix[row][col] + preNoUse,
+      use = Math.max(-matrix[row][col] + preNoUse, matrix[row][col] + preUse)
+  if(noUse >= 0){
+    res[0] = noUse
+  }
+  if(use >= 0){
+    res[1] = use
+  }
+  return res
+}
+
+function snack(matrix){
+  if(!matrix || matrix.length === 0 || matrix[0].length === 0){
+    return 0
+  }
+  let row = matrix.length,
+      col = matrix[0].length,
+      res = 0
+  for(let i=0; i<row; i++){
+    for(let j=0; j<col; j++){
+      res = Math.max(res, ...process(matrix, i, j))
+    }
+  }
+  return res
+}
+```
+
