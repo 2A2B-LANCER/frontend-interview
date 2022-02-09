@@ -220,6 +220,49 @@ function process(s, si, p, pi){
 
 
 
+```javascript
+// 动态规划优化内循环，也可以在记忆化搜索中做
+var isMatch = function(s, p) {
+  let map = new Array(s.length + 1).fill(0).map(() => new Array(p.length + 1).fill(0))
+  return process(s, 0, p, 0, map)
+};
+
+function process(s, si, p, pi, map){
+  if(map[si][pi] !== 0){
+    return map[si][pi]
+  }
+  if(pi === p.length && si === s.length){
+    map[si][pi] = true
+    return true
+  }
+  let res = false
+  if(pi + 1 === p.length || p[pi + 1] !== '*'){
+    if(si !== s.length && [s[si], '.'].includes(p[pi])){
+      res = process(s, si + 1, p, pi + 1, map)
+    }
+  }else{
+    if(si === s.length || ![s[si], '.'].includes(p[pi])){
+      res = process(s, si, p, pi + 2, map)
+    }else{
+      let i = si
+      res = process(s, si, p, pi + 2, map) || process(s, si + 1, p, pi, map)
+    }
+    // while(si !== s.length && [s[si], '.'].includes(p[pi])){
+    //   if(process(s, si, p, pi + 2, map)){
+    //     map[si][pi] = true
+    //     return true
+    //   }
+    //   si++
+    // }
+    // res = process(s, si, p, pi + 2, map)
+  }
+  map[si][pi] = res
+  return res
+}
+```
+
+
+
 
 
 #### 题目五
