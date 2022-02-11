@@ -35,7 +35,8 @@
 9. for...of、for...in
 10. Promise
 11. async/await
-12. 等
+12. new.target
+13. 等
 
 
 
@@ -61,9 +62,11 @@
 
 ##### Service Worker
 
+> https://juejin.cn/post/6844904052166230030#heading-8
+
 可以通过 `navigator.serviceWorker` 获取
 
-> Service workers 本质上充当Web应⽤程序与浏览器之间的代理服务器，也可以在⽹ 络可⽤时作为浏览器和⽹络间的代理。它们旨在（除其他之外）使得能够创建有效的 离线体验，拦截⽹络请求并基于⽹络是否可⽤以及更新的资源是否驻留在服务器上来 采取适当的动作。他们还允许访问推送通知和后台同步API。
+> Service workers 本质上充当Web应⽤程序与浏览器之间的代理服务器，也可以在⽹络可⽤时作为浏览器和⽹络间的代理。它们旨在（除其他之外）使得能够创建有效的 离线体验，拦截⽹络请求并基于⽹络是否可⽤以及更新的资源是否驻留在服务器上来 采取适当的动作。他们还允许访问推送通知和后台同步API。
 
 ⽬前该技术通常⽤来做缓存⽂件，提⾼⾸屏速度，可以试着来实现这个功能
 
@@ -476,3 +479,98 @@ One more counter: <input type="button" value="2" data-counter>
 - false
 - +0 -0 NaN
 - ""
+
+
+
+#### setTimeout(fn, 0) 多久才执行？
+
+------
+
+延时设置为零的含义是将当前异步任务放置到宏任务队列的开头，当下一轮宏任务开始的时候就是该任务执行，这个时间跨度是由任务执行耗时决定的，最快也要 4ms，因为 H5 规定 setTimeout 的延时不得小于 4ms
+
+
+
+#### 如何判断空对象？
+
+------
+
+```javascript
+Object.keys(obj).length === 0
+```
+
+
+
+#### 外部JS文件先加载还是 onload 先执行，为什么？
+
+------
+
+1. head 中的JS文件先加载
+2. body 中的JS文件按顺序加载
+3. 加载完成之后 onload 再执行
+
+
+
+#### 函数中的arguments是数组吗？类数组转数组的方法了解一下？
+
+------
+
+不是，属于 类数组
+
+1. [...arguments]
+2. Array.from
+3. Array.prototype.slice.apply(arguments)
+
+
+
+#### 箭头函数和普通函数有什么区别
+
+1. 箭头函数没有自己的 this，会通过查找作用域链引用最近一层非箭头函数的 this
+2. 箭头函数没有自己的 arguments 对象（可以使用命名参数或者 rest 参数）
+3. 不能通过 new 关键字 调用，原因是 JS 的函数有两个内部方法 [[Call]]（直接调用时执行）和 [[Construct]] （new 调用时执行），箭头函数没有后者
+4. 没有 new.target
+5. 没有原型
+6. 没有 super
+
+
+
+#### class 关键字， static 关键字
+
+class 关键字是 ES6 实现类的一个语法糖
+
+static 关键字是把属性或方法直接添加到函数对象上，而不是原型上
+
+
+
+#### 实现 数组扁平化函数
+
+```javascript
+Array.prototype.myFlat = function(depth){
+  if(Object.prototype.toString.call(this) !== '[object Array]'){
+    throw new TypeError('非数组对象不能降维！')
+  }
+  if(depth < 1){
+    return this
+  }
+  let res = []
+  this.forEach((item) => {
+    if(Object.prototype.toString.call(item) === '[object Array]'){
+      res.push(...item.myFlat(depth - 1))
+    }else{
+      res.push(item)
+    }
+  })
+  return res
+}
+```
+
+
+
+#### instanceof
+
+```javascript
+// es5
+[] instanceof Array
+// es6
+Array[Symbol.hasInstance]([])
+```
+
