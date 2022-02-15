@@ -84,3 +84,137 @@ function isValid(arr){
 
 > https://leetcode-cn.com/problems/shortest-bridge/
 
+思路是：
+
+1. 从第一个岛出发，BFS填充 每个格到第一个岛的距离 + 1
+2. 从第二个岛出发，BFS填充 每个格到第二个岛的距离 + 1
+3. 将每个格到第一、二个岛的距离加起来 - 3，最小值就是答案
+
+```javascript
+var shortestBridge = function(grid) {
+  let row = grid.length,
+      col = grid[0].length,
+      curs = [],
+      nexts = [],
+      fromIsland1 = new Array(row * col).fill(0),
+      fromIsland2 = new Array(row * col).fill(0)
+  for(let i=0; i<row; i++) {
+    for(let j=0; j<col; j++) {
+      if(!fromIsland1.includes(0) && !fromIsland2.includes(0)){
+        return getRes(fromIsland1, fromIsland2)
+      }
+      let thisIsland = fromIsland1.includes(0) ? fromIsland1 : fromIsland2
+      infect(grid, i, j, curs, thisIsland)
+      while(curs.length !== 0){
+        bfs(curs, nexts, col, thisIsland)
+        curs = nexts
+        nexts = []
+      }
+    }
+  }
+  return getRes(fromIsland1, fromIsland2)
+};
+
+function getRes(island1, island2) {
+  let min = Infinity,
+      len = island1.length
+  for(let i = 0; i < len; i++){
+    min = Math.min(min, island1[i] + island2[i] - 3)
+  }
+  return min
+}
+
+function infect(grid, x, y, curs, thisIsland){
+  if(x >= grid.length || x < 0 || y >= grid[0].length || y < 0 || grid[x][y] !== 1){
+    return
+  }
+  grid[x][y] = -1
+  let index = x * grid[0].length + y
+  curs.push(index)
+  thisIsland[index] = 1
+  infect(grid, x - 1, y, curs, thisIsland)
+  infect(grid, x + 1, y, curs, thisIsland)
+  infect(grid, x, y - 1, curs, thisIsland)
+  infect(grid, x, y + 1, curs, thisIsland)
+}
+
+function bfs(curs, nexts, col, thisIsland) {
+  for(let i = 0; i < curs.length; i++) {
+    if(curs[i] % col !== 0 && thisIsland[curs[i] - 1] === 0){
+      thisIsland[curs[i] - 1] = thisIsland[curs[i]] + 1
+      nexts.push(curs[i] - 1)
+    }
+    if(curs[i] % col !== col - 1 && thisIsland[curs[i] + 1] === 0){
+      thisIsland[curs[i] + 1] = thisIsland[curs[i]] + 1
+      nexts.push(curs[i] + 1)
+    }
+    if(curs[i] >= col && thisIsland[curs[i] - col] === 0){
+      thisIsland[curs[i] - col] = thisIsland[curs[i]] + 1
+      nexts.push(curs[i] - col)
+    }
+    if(curs[i] + col < thisIsland.length && thisIsland[curs[i] + col] === 0){
+      thisIsland[curs[i] + col] = thisIsland[curs[i]] + 1
+      nexts.push(curs[i] + col)
+    }
+  }
+}
+```
+
+
+
+#### 题目三
+
+> https://www.nowcoder.com/questionTerminal/8ecfe02124674e908b2aae65aad4efdf?f=discussion
+
+一去一回，获得最大路径和，但是走过的点，再走是没有收获的
+
+所以就把这个过程等同为：两个人同时从起点往终点走，如果在同一个点，只加一次，二者同时移动，那肯定会同时到达终点，求这个最大路径和
+
+```javascript
+function getMax(matrix, x1, y1, x2, y2, dp){
+  if(x1 >= matrix.length ||
+     x2 >= matrix.length ||
+     y1 >= matrix[0].length ||
+     y2 >= matrix[0].length){
+    return -Infinity
+  }
+  if(dp[x1][y1][x2] !== -1){
+    return dp[x1][y1][x2]
+  }
+  if(x1 === matrix.length - 1 && y1 === matrix[0].length - 1){
+    dp[x1][y1][x2] = matrix[x1][y1]
+    return matrix[x1][y1]
+  }
+  let res = matrix[x1][y1]
+  if(x1 !== x2 || y1 !== y2){
+    res += matrix[x2][y2]
+  }
+  let p1 = getMax(matrix, x1 + 1, y1, x2 + 1, y2, dp),
+      p2 = getMax(matrix, x1, y1 + 1, x2, y2 + 1, dp),
+      p3 = getMax(matrix, x1 + 1, y1, x2, y2 + 1, dp),
+      p4 = getMax(matrix, x1, y1 + 1, x2 + 1, y2, dp)
+  res += Math.max(p1, p2, p3, p4)
+  dp[x1][y1][x2] = res
+  return res
+}
+
+function getMaxSum(matrix){
+  if(matrix.length === 0 || matrix[0].length === 0){
+    return 0
+  }
+  let n = matrix.length,
+      m = matrix[0].length
+  let dp = new Array(n).fill(0).map(() => new Array(m).fill(0).map(() => new Array(n).fill(-1)))
+  getMax(matrix, 0, 0, 0, 0, dp)
+  
+  return dp[0][0][0]
+}
+```
+
+
+
+#### 题目四
+
+> https://www.nowcoder.com/practice/7201cacf73e7495aa5f88b223bbbf6d1
+
+大根堆
