@@ -26,17 +26,22 @@
 
 1. const/let
 2. Obejct.defineProperty
-3. 模板字符串
-4. 箭头函数
-5. 解构赋值
-6. `...` 扩展、收集操作符
-7. 函数的参数默认值
-8. class 关键字
-9. for...of、for...in
-10. Promise
-11. async/await
-12. new.target
-13. 等
+3. Object.create
+4. Object.assign
+5. Object.entries
+6. Proxy
+7. Reflect
+8. 模板字符串
+9. 箭头函数
+10. 解构赋值
+11. `...` 扩展、收集操作符
+12. 函数的参数默认值
+13. class 关键字
+14. for...of、for...in
+15. Promise
+16. async/await
+17. new.target
+18. 等
 
 
 
