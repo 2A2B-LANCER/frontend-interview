@@ -218,3 +218,103 @@ function getMaxSum(matrix){
 > https://www.nowcoder.com/practice/7201cacf73e7495aa5f88b223bbbf6d1
 
 大根堆
+
+
+
+#### 题目五
+
+> https://leetcode-cn.com/problems/maximum-gap/
+
+```javascript
+// 双向链表 + 哈希表
+var LRUCache = function(capacity) {
+  this.capacity = capacity
+  this.map = new Map()
+  this.nodes = new DoubleLinkedList()
+};
+
+LRUCache.prototype.get = function(key) {
+  if(this.map.has(key)){
+    let thisNode = this.map.get(key)
+    this.nodes.moveNodeToTail(thisNode)
+    return thisNode.val
+  }else{
+    return -1
+  }
+};
+
+LRUCache.prototype.put = function(key, value) {
+  if(this.map.has(key)){
+    let thisNode = this.map.get(key)
+    thisNode.val = value
+    this.nodes.moveNodeToTail(thisNode)
+  }else{
+    let thisNode = new Node(key, value)
+    this.map.set(key, thisNode)
+    this.nodes.addNode(thisNode)
+    if(this.map.size > this.capacity){
+      let head = this.nodes.removeHead()
+      this.map.delete(head.key)
+    }
+  }
+};
+
+function Node(key, val, last = null, next = null) {
+  this.key = key;
+  this.val = val;
+  this.last = last;
+  this.next = next;
+}
+
+function DoubleLinkedList(){
+  this.head = null;
+  this.tail = null;
+}
+DoubleLinkedList.prototype.addNode = function(node) {
+  if(!node){
+    return;
+  }
+  if(!this.head){
+    this.head = node;
+    this.tail = node;
+  }else{
+    this.tail.next = node;
+    node.last = this.tail
+    this.tail = node;
+  }
+}
+
+DoubleLinkedList.prototype.moveNodeToTail = function(node){
+  if(node === this.tail){
+    return;
+  }
+  if(node === this.head){
+    this.head = node.next
+    this.head.last = null
+  }else{
+    node.last.next = node.next
+    node.next.last = node.last
+  }
+  node.last = this.tail
+  node.next = null
+  this.tail.next = node
+  this.tail = node
+}
+
+DoubleLinkedList.prototype.removeHead = function(){
+  if(!this.head){
+    return
+  }
+  let res = this.head
+  if(this.head === this.tail){
+    this.head = null
+    this.tail = null
+  }else{
+    this.head = res.next
+    res.next = null
+    this.head.last = null
+  }
+  return res
+}
+```
+
