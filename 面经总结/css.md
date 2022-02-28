@@ -14,7 +14,7 @@
 
 如何解决：
 
-- 父元素定义 `overflow: hidden` （zoom: 1 兼容 IE6）
+- 父元素定义 `overflow: hidden` 
 
   优点：代码少，简单
 
@@ -59,6 +59,8 @@
 
 #### 定位的属性值有什么区别？
 
+****
+
 - relative：相对定位，不脱离文档流，相对于自身位置定位
 - absolute：绝对定位，脱离文档流，相对于 最靠近当前元素的，首个非 static 定位的父级定位
 - fixed：固定定位，脱离文档流，相对于浏览窗口定位
@@ -66,313 +68,6 @@
 - inherit：从父元素继承 position 属性的值
 
 
-
-#### 子元素如何在父元素居中？
-
-##### 水平居中
-
-- 子父元素宽度固定，子元素设置 margin: auto，并且子元素不能设置浮动
-
-  ```javascript
-  // 1. 父子元素的宽度必须固定
-  // 2. 子元素必须设置 margin: auto
-  // 3. 子元素不能浮动
-  .fatcher{
-      height: 400px;
-      width: 400px;
-      background: #42B983;
-  }
-  .son{
-      width: 200px;
-      height: 200px;
-      background: #00FFFF;
-      margin: auto;
-  }
-  ```
-
-- 子父元素宽度固定，父元素设置 text-align: center，子元素设置 display: inline-block，并且子元素不能设置浮动，否则居中失效
-
-  ```javascript
-  // 1. 父元素必须设置 text-align: center
-  // 2. 子元素必须设置 display: inline-block
-  // 3. 子元素不能浮动
-  .fatcher{
-      height: 400px;
-      width: 400px;
-      background: #42B983;
-      text-align: center;
-  }
-  .son{
-      width: 200px;
-      height: 200px;
-      background: #00FFFF;
-      display: inline-block;
-  }
-  ```
-
-
-##### 垂直居中
-
-- 弹性盒子（**有兼容性问题**）
-
-  ```javascript
-  // 1. 父元素设置 display 为 flex
-  // 2. 子元素设置 align-self 为 center
-  .father{
-      height: 400px;
-      width: 400px;
-      background: #42B983;
-      display: flex;
-  }
-  .son{
-      width: 200px;
-      height: 200px;
-      background: #00FFFF;
-      align-self: center;
-  }
-  // 或者
-  // 1. 父元素设置 display 为 flex
-  // 2. 父元素设置 align-items 为 center
-  .father{
-      height: 400px;
-      width: 400px;
-      background: #42B983;
-      display: flex;
-      align-items: center;
-  }
-  .son{
-      width: 200px;
-      height: 200px;
-      background: #00FFFF;
-  }
-  ```
-
-- 隐藏节点（**不利于页面优化**）
-
-  ```javascript
-  // 在要居中的子元素上面添加一个隐藏元素，height 为 (father - son) / 2
-  .father{
-      height: 400px;
-      width: 400px;
-      background: #42B983;
-  }
-  .son{
-      width: 200px;
-      height: 200px;
-      background: #00FFFF;
-  }
-  .hidden{
-      height: 100px;
-  }
-  ```
-
-- 模拟 table（**推荐使用**）
-
-  ```javascript
-  // 1. 父元素 display 设置为 table-cell
-  // 2. 父元素 vertical-align 设置为 middle
-  .father{
-      height: 400px;
-      width: 400px;
-      background: #42B983;
-      display: table-cell;
-      vertical-align: middle;
-  }
-  .son{
-      width: 200px;
-      height: 200px;
-      background: #00FFFF;
-  }
-  ```
-
-- 子元素绝对定位（**有兼容性问题**）
-
-  ```javascript
-  // 1. 子元素设置 position 为 absolute
-  // 2. 子元素 top 设置为 50%
-  // 3. 子元素 transform 设置为 translateY(-50%)
-  // 注意！父元素 position 不能是 默认值 static
-  .father{
-      height: 400px;
-      width: 400px;
-      background: #42B983;
-      position: absolute;
-  }
-  .son{
-      width: 200px;
-      height: 200px;
-      background: #00FFFF;
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%)
-  }
-  ```
-
-- 子元素相对定位（**有兼容性问题**）
-
-  ```javascript
-  // 1. 子元素设置 position 为 relative
-  // 2. 子元素 top 设置为 50%
-  // 3. 子元素 transform 设置为 translateY(-50%)
-  .father{
-      height: 400px;
-      width: 400px;
-      background: #42B983;
-  }
-  .son{
-      width: 200px;
-      height: 200px;
-      background: #00FFFF;
-      position: relative;
-      top: 50%;
-      transform: translateY(-50%)
-  }
-  ```
-
-  
-
-##### 水平垂直居中
-
-- 子元素相对于父元素绝对定位，子元素 top，left 设置 50%，子元素 margin-top 和 margin-left 减去各自宽高的一半（**有局限性，必须得知道子元素本身的宽高**）
-
-  ```javascript
-  // 1. 子元素 top, left 设置为 50%
-  // 2. 子元素的 margin-top 设置为 -(height / 2), margin-left 设置为 -(width / 2)
-  // 3. 子元素设置 position: absolute
-  // 4. 注意！父元素的 position 必须不能是默认值 static
-  .fatcher{
-      height: 400px;
-      width: 400px;
-      background: #42B983;
-      position: absolute;
-  }
-  .son{
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 200px;
-      height: 200px;
-      margin-top: -100px;
-      margin-left: -100px;
-      background: #00FFFF;
-  }
-  ```
-
-- 子元素相对父元素绝对定位，子元素上下左右全部设置为 0，然后设置子元素 margin: auto
-
-  ```javascript
-  // 1. 子元素的 top, bottom, left, right 都设置为 0
-  // 2. 子元素的 margin 设置为 auto
-  // 3. 子元素的 position 设置为 absolute
-  // 4. 注意！父元素的 position 不能是默认值 static
-  .fatcher{
-      height: 400px;
-      width: 400px;
-      background: #42B983;
-      position: absolute;
-  }
-  .son{
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      width: 200px;
-      height: 200px;
-      margin: auto;
-      background: #00FFFF;
-  }
-  ```
-
-- 父元素设置 display: table-cell vertical-align: middle，子元素设置 margin: auto
-
-  ```javascript
-  // 1. 父元素的 display 设置为 table-cell
-  // 2. 父元素的 vertical-align 设置为 middle
-  // 3. 子元素的 margin 设置为 auto
-  .father{
-      height: 400px;
-      width: 400px;
-      background: #42B983;
-      display: table-cell;
-      vertical-align: middle;
-  }
-  .son{
-      margin: auto;
-      width: 200px;
-      height: 200px;
-      background: #00FFFF;
-  }
-  ```
-
-- 子元素相对定位，子元素 top，left 值为 50%，transform: translate(-50%, -50%)（**有兼容性问题**）
-
-  ```javascript
-  // 1. 子元素 position 设置为 relative
-  // 2. 子元素 top, left 设置为 50%
-  // 3. 子元素 transform 设置为 translate(-50%, -50%)
-  .father{
-      height: 400px;
-      width: 400px;
-      background: #42B983;
-  }
-  .son{
-      position: relative;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 200px;
-      height: 200px;
-      background: #00FFFF;
-  }
-  ```
-
-- 子元素相对父元素绝对定位，子元素 top，left 值为 50%，transform: translate(-50%, -50%)（**有兼容性问题**）
-
-  ```javascript
-  // 1. 子元素 position 设置为 absolute
-  // 注意！父元素的 position 不能是默认值 static
-  // 2. 子元素 top, left 设置为 50%
-  // 3. 子元素 transform 设置为 translate(-50%, -50%)
-  .father{
-      height: 400px;
-      width: 400px;
-      background: #42B983;
-      position: absolute;
-  }
-  .son{
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 200px;
-      height: 200px;
-      background: #00FFFF;
-  }
-  ```
-
-- 父元素设置弹性盒子（**有兼容性问题**）
-
-  ```javascript
-  // 1. 父元素设置 display 为 flex
-  // 2. 父元素设置 justify-content 为 center
-  // 3. 父元素设置 align-items 为 center
-  .father{
-      height: 400px;
-      width: 400px;
-      background: #42B983;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-  }
-  .son{
-      width: 200px;
-      height: 200px;
-      background: #00FFFF;
-  }
-  ```
-
-  
 
 #### border-box 和 content-box 的区别
 
@@ -386,6 +81,8 @@ box-sizing 的两个属性，代表两个盒模型尺寸
 
 
 #### 标准模式和怪异模式的区别
+
+****
 
 - 标准盒模型 和 怪异盒模型
 
@@ -561,6 +258,8 @@ link 和 @import 的区别
 
 #### px em rem 的区别
 
+****
+
 - px（像素），是一种固定尺寸，不会随着设备大小这些因素变化而变化
 - em（相对单位长度），相对于**父级元素（不一定是父元素）**的属性变化而变化
 - rem（相对单位长度），相对于根元素（HTML 元素）的字体大小变化而变化
@@ -568,3 +267,432 @@ link 和 @import 的区别
 px 可以做很多属性的单位；em 和 rem 是字体大小的单位
 
 默认情况下，1em = 1rem = 16px
+
+
+
+#### 怎么实现一个最大的正方形
+
+****
+
+```css
+section{
+    width: 100%;
+    padding-bottom: 100%;
+}
+```
+
+
+
+#### 实现 一行文字居中，多行文字，换行后左对齐
+
+****
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    div{
+      text-align: center;
+    }
+    .multiLine span{
+      display: inline-block;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="multiLine"><span>我是多行文字。我是多行文字。我是多行文字。我是多行文字。我是多行文字。我是多行文
+  字。我是多行文字。我是多行文字。我是多行文字。我是多行文字。</span></div>
+  <div><span>我是一行文字</span></div>    
+</body>
+</html>
+```
+
+
+
+#### 居中方式
+
+****
+
+##### 水平居中
+
+- 子元素 **行内元素**，**父元素设置 `text-align:center`**
+
+- 子元素 **块级元素**，**父元素设置 `margin:0 auto`**
+
+- **父元素设置 `width:fit-content`**（根据内容，宽度自适应）**结合，margin: 0 auto**，实现水平居中
+
+  ```css
+  .parent{
+      width: fit-content;
+      width: -webkit-fit-content;
+      width: -moz-fit-content;
+      margin: 0 auto;
+  }
+  ```
+
+- 弹性盒子 **父元素设置 `display:flex;justify-content:center`**
+
+  ```css
+  .parent{
+      display: flex;
+      justify-content: center;
+  }
+  ```
+
+- transform 属性，平移
+
+  ```css
+  .son{
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%, 0)
+  }
+  ```
+
+- 绝对定位，**注意，使用绝对定位，父元素的定位最好使用 relative，用以在文档流中占位**
+
+  - 绝对定位，位置固定和尺寸固定，自适应 margin
+
+    ```css
+    .son{
+        width: 100px;
+        position: absolute;
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+    }
+    ```
+
+  - 绝对定位，位置和 margin 固定，尺寸自适应
+
+    ```css
+    .son{
+        position: absolute;
+        left: 0;
+        right: 0;
+        margin: 20px;
+    }
+    ```
+
+##### 垂直居中
+
+- 单行文本，**设置 `line-height` 等于 父元素高度**
+
+- 子元素是 行内块级元素
+
+  ```css
+  .inner, .outer::after{
+      display: inline-block;
+      vertical-align: middle;
+  }
+  .outer::after{
+      content: "";
+      height: 100%;
+  }
+  ```
+
+- `vertical-align`，**只有在父层是 td 或 th 时生效**
+
+  ```css
+  .parent{
+      display: table;
+  }
+  .son{
+      display: table-cell;
+      vertical-align: middle;
+  }
+  ```
+
+- 弹性盒子
+
+  ```css
+  .parent{
+      display: flex;
+      align-items: center;
+  }
+  ```
+
+- 绝对定位，平移
+
+  ```css
+  .son{
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%)
+  }
+  ```
+
+- 绝对定位，位置固定和尺寸固定，自适应 margin
+
+  ```css
+  .son{
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      margin: auto 0;
+  }
+  ```
+
+- 绝对定位，位置和 margin 固定，尺寸自适应
+
+  ```css
+  .son{
+      width: 100px;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      margin: 20px;
+  }
+  ```
+
+
+
+#### 两栏布局，左边固定，右边自适应，左右不重叠
+
+****
+
+- `float + margin`
+
+  ```css
+  .container {
+      height: 500px;
+      width: 100%;
+      overflow: hidden;
+  }
+  .container > div {
+      height: 100%;
+  }
+  .left{
+      width: 300px;
+      background-color: red;
+      float: left;
+      margin-right: 10px;
+  }
+  .right{
+      background-color: yellow;
+      overflow: hidden;
+  }
+  ```
+
+- 弹性盒子
+
+  ```css
+  .container {
+      height: 500px;
+      width: 100%;
+      display: flex;
+      overflow: hidden;
+  }
+  .container > div {
+      height: 100%;
+  }
+  .left{
+      background-color: red;
+      flex: 0 1 100px;
+  }
+  .right{
+      background-color: yellow;
+      flex: 1;
+  }
+  ```
+
+- `table + table-cell`
+
+  ```css
+  .container {
+      height: 500px;
+      width: 100%;
+      display: table;
+      overflow: hidden;
+  }
+  .container > div {
+      height: 100%;
+      display: table-cell;
+  }
+  .left{
+      background-color: red;
+      width: 200px;
+  }
+  .right{
+      background-color: yellow;
+  
+  }
+  ```
+
+
+
+#### 三栏布局
+
+****
+
+- 弹性盒子
+
+  ```css
+  .container {
+      height: 500px;
+      width: 100%;
+      display: flex;
+  }
+  .container > div {
+      height: 100%;
+  }
+  .left{
+      background-color: red;
+      width: 100px
+  }
+  .mid{
+      background-color: yellow;
+      flex: 1;
+  }
+  .right{
+      background-color: green;
+      width: 100px
+  }
+  ```
+
+- `grid`
+
+  ```css
+  .container {
+      height: 500px;
+      width: 100%;
+      display: grid;
+      grid-template-rows: 200px;
+      grid-template-columns: 300px auto 300px;
+  }
+  ```
+
+  
+
+#### BFC
+
+****
+
+> 页面上的一个隔离的独立容器，容器内外的元素不会相互影响
+
+作用：
+
+- 避免 `margin` 重叠（分属两个 BFC 即可）
+- 自适应两栏布局
+- 清除浮动（BFC 计算高度的时候会算上浮动元素）
+
+如何激活 BFC
+
+- `float` 不是 `none`
+- `position` 不是 `static` 和 `relative`
+- `display` 是 `inline-block/table-cell/flex/table-caption/inline-flex`
+- overflow 不是 `visible`
+
+
+
+#### margin 重叠
+
+相邻的块级元素，垂直方向上的 `margin` 会重叠
+
+- 都是正数，结果是较大值
+- 都是负数，结果是绝对值大的
+- 一正一负，结果是二者相加的和
+
+
+
+#### 让一个元素消失
+
+- display：none，彻底消失，会造成 回流与重绘
+- visibility：hidden，空间保存，会造成 重绘，适用于 **希望隐藏元素，又不影响页面布局**
+- opacity： 0，只是肉眼看不到了
+
+
+
+#### calc 属性
+
+动态计算长度值，**运算符前后要保留空格**
+
+
+
+#### display: table 和 table 元素 有什么区别
+
+前者的 CSS 声明能让一个 HTML 元素及其子节点像 table 元素一样操作，而且不会产生使用 table 这样的制表标签产生的语义化问题
+
+**table 系表格元素必须在页面完全加载后才能显示，div 逐行显示，table 的嵌套性太多，没有 div 简洁**
+
+
+
+#### z-index 属性
+
+设置元素的 堆叠顺序，高序列排在低序列前面，值可为负、`auto` 默认值 等于父元素、`number`、继承
+
+
+
+background-color 填充哪些区域
+
+content、padding、border
+
+
+
+#### block、inline、inline-block 的区别
+
+- `block` 块级元素，能设置宽高，margin 和 padding 水平垂直都能设置，前后有换行符
+- `inline` 行内元素，不能设置宽高，margin 垂直无效，padding 都有效，前后无换行符
+- `inline-block` 行内块元素，能设置宽高，margin 和 padding 都有效，前后无换行符
+
+
+
+#### 为什么 img 是 行内元素还能设置宽高
+
+可替换元素：CSS 只能影响可替换元素的位置，不能影响内容
+
+- iframe
+- video
+- embed
+- img
+- image 类型的 input
+
+
+
+#### 重绘与回流
+
+HTML 渲染过程
+
+1. 解析 HTML 文档构建 DOM 树
+2. 解析 CSS 文档构建 CSSOM 树
+3. 将二者关联，构建 Render Tree
+4. 按照 Render Tree 进行布局， GPU 绘制页面
+
+回流：
+
+- 布局变化
+- 浏览器窗口尺寸变化
+- 新增删除可见元素
+- 内容变化
+- 字体大小变化
+- 激活 CSS 伪类
+- 设置 Style 属性
+- 查询 offsetTop 这些属性
+- 调用getComputedStyle方法
+
+重绘：只更改元素外观
+
+**回流必定重绘，重绘不一定回流，前者开销大**
+
+
+
+#### 如何减少重绘与回流
+
+- 使用 `translate` 代替 `top、bottom、left、right` 
+- `visibility` 代替 `display:none`，前者重绘，后者回流
+- 先把 DOM 离线（比如 `display:none`），统一修改，再显示出来
+- 不在循环中频繁获取 DOM 节点的属性值
+- 不使用 table 布局
+- 频繁运行的动画改为图层
+
+
+
+#### 两个嵌套的 div，position 都是 absolute，子 div 设置 top 属性，那么这个 top 是相对于父元素的哪个位置定位的
+
+border 的内边缘
