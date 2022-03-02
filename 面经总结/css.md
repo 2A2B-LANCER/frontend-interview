@@ -315,6 +315,28 @@ section{
 
 
 
+#### 实现超出部分的文本用省略号显示
+
+```css
+/* 一行文本 */
+.text{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 多行文本 */
+.texts{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+```
+
+
+
 #### 居中方式
 
 ****
@@ -457,7 +479,7 @@ section{
 
 ****
 
-- `float + margin`
+- `float`
 
   ```css
   .container {
@@ -494,7 +516,7 @@ section{
   }
   .left{
       background-color: red;
-      flex: 0 1 100px;
+      flex: 0 0 100px;
   }
   .right{
       background-color: yellow;

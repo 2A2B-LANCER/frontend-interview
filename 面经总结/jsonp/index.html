@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>jsonp</title>
+</head>
+<body>
+    <h5 style="display: inline;">您的账户余额是</h5><span id="amount">&&&amount&&&</span>
+    <button id="btn">触发JSONP</button>
+    <script>
+        btn.addEventListener('click', (e)=>{
+            let script = document.createElement('script')
+            window['jsonpFunc'] = function(result){ 
+                if (result==='success'){
+                  let amount = document.getElementById('amount')
+                  amount.innerText = amount.innerText - 0 - 1  // 避免刷新页面，前端和后台做同样的操作
+                }else{
+                    console.log('出错！')
+                }
+            }
+            // 这里在frank.com:8001下，请求 jack.com:8002的资源
+            script.src = 'http://a.com:8002/pay?callbackName=jsonpFunc'
+            document.body.appendChild(script)
+            script.onload = function(e){
+                console.log('onload')
+                e.currentTarget.remove()
+                delete window['jsonpFunc']  // 无论是否请求成功，都删掉发送过请求的script标签和函数名
+            }
+            script.error = function(e){
+                e.currentTarget.remove()
+                delete window['jsonpFunc'] 
+            }
+        })
+    </script>
+</body>
+</html>
