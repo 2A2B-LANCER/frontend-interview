@@ -24,24 +24,56 @@
 
 ------
 
-1. const/let
-2. Obejct.defineProperty
-3. Object.create
-4. Object.assign
-5. Object.entries
-6. Proxy
-7. Reflect
-8. 模板字符串
-9. 箭头函数
-10. 解构赋值
-11. `...` 扩展、收集操作符
-12. 函数的参数默认值
-13. class 关键字
-14. for...of、for...in
-15. Promise
-16. async/await
-17. new.target
-18. 等
+- 数据类型
+  - `Symbol`
+  - `BigInt`（ES6+ 不是 ES6）
+  - `Map`
+  - `WeakMap`
+  - `Set`
+  - `WeakSet`
+- 作用域
+  - 块级作用域
+  - let
+  - const
+- 扩展运算符
+- 解构赋值
+- 模板字符串
+- 函数
+  - 箭头函数
+    - 没有 this
+    - 没有 arguments
+    - 不能作为 构造函数
+  - 尾调用优化
+  - 剩余参数
+  - 参数默认值
+- 类
+  - `class`
+  - `extends`
+  - `super`
+- `Promise`
+- `async` 函数
+- 迭代器
+- 生成器
+- 内置对象（新增、加11111111111111111111111111111111111112222222222222222222强）
+  - `Proxy` 新增
+  - `Reflect` 新增
+  - `Object.is()`
+  - `Object.assign()`
+  - `Object.getOwnPropertyDescriptors()`
+  - `Object.getPropertyOf()`
+  - `Object.setPropertyOf()`
+  - `Object.keys()/values()/entries()`
+  - `Oject.fromEntries()`
+  - `Array.from()`
+  - `Array.of()`
+  - `A.p.fill()`
+  - `A.p.find()`
+  - `A.p.includes()`
+  - `A.p.at()`
+  - `A.p.at()`
+- 模块
+  - `import`
+  - `export`
 
 
 
