@@ -619,7 +619,7 @@ Array.prototype.myFlat = function(depth){
 
 
 
-#### instanceof
+#### `instanceof`
 
 ```javascript
 // es5
@@ -627,4 +627,34 @@ Array.prototype.myFlat = function(depth){
 // es6
 Array[Symbol.hasInstance]([])
 ```
+
+
+
+#### 计算 `localStorage` 的大小
+
+```javascript
+function computedLocalStorageLength(){
+  let str = ""
+  while (str.length < 10240){
+    str += "01234567"
+  }
+  const TENKB = str
+  localStorage.clear();
+  return new Promise((resolve, reject) => {
+    const timer = setInterval(() => {
+      try {
+        localStorage.setItem('temp', str)
+      }catch(e){
+        clearInterval(timer)
+        localStorage.removeItem('temp')
+        resolve(`localStorage 的最大容量：${str.length / 1024 - 10} KB`)
+      }
+      str += TENKB
+    }, 0)
+  })
+}
+computedLocalStorageLength().then(val => console.log(val))
+```
+
+
 
