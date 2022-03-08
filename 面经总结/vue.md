@@ -57,7 +57,7 @@
 
 ****
 
-为了在 VDOM 更新的时候能够复用相同 key 值的元素，提高 VDOM 更新的效率
+`vnode` 的唯一标识，为了在 VDOM 更新的时候能够复用相同 key 值的元素，提高 VDOM 更新的效率
 
 
 
@@ -65,7 +65,96 @@
 
 ****
 
-1. `props`/`$emit`
-   1. 子组件设置 `props` 属性，父组件在子组件实例上使用同名属性传值
-   2. 父组件在子组件实例上注册事件监听，在子组件内部用 `$emit` 调用该事件，传递值过去
+1. `props`/`$emit`，**用于父子组件通信**
+   - 子组件设置 `props` 属性，父组件在子组件实例上使用同名属性传值
+   - 父组件在子组件实例上注册事件监听，在子组件内部用 `$emit` 调用该事件，传递值过去
+2. `$emit` / `$on`，**用于轻量级项目的状态管理**
+   - 和方法一的原理相同，做法不同，这个可以通信的组件包括父子、兄弟、跨级
+   - 创建一个全局 `eventBus`，假设 A/B 组件通信
+   - A 组件注册一个事件，B 组件调用同名事件，传递参数，完成通信
+3. vuex，vue 官方的状态管理器，其中的响应式对象可以通过 `$store` 进行交互，无关是否跨组件，**常用于多级组件嵌套需要传递数据**
+4. `$attrs` / `$listener`，**用于多级组件嵌套，但是数据不做中间处理**
+   - `$attrs`：包含子组件实例上未声明为 `props` 的属性，可以通过 `v-bind=$attrs` 传入内部组件
+   - `$listener`：包含子组件实例上使用 `v-on` 绑定的非原生事件
+5. `provide` / `inject`，**多用于跨级组件间的通信，主要是子组件获取父级组件的状态**，可以使用 `Vue.observable` 优化响应式 `provide`
+6. `$parent` / `$children` 与 `ref`，**无法在跨级或兄弟间通信，只能用于父子组件**
 
+
+
+#### `watch` 和 `computed` 的区别
+
+****
+
+- 二者都是用 `watcher` 对象实现的
+- 最主要的区别是，`computed` 有缓存，`watch` 没有
+- 当 `computed` 依赖的响应式对象并没有发生改变的时候，使用 `computed` 的值就会直接返回缓存；发生改变后就会通过派发更新（setter）通知该 `computed` 属性需要更新，再次访问就会重新计算
+- `watch` 监听的响应式对象发生改变的时候，派发更新（setter）就会通知这个 `watch` 的 `watcher`，然后执行 `watch` 的函数
+
+
+
+#### vue 中怎么重置 data
+
+****
+
+```javascript
+Object.assign(this.$data, this.$options.data.call(this))
+```
+
+
+
+#### `name` 的作用
+
+****
+
+- 便于调试
+- 递归组件调用自身
+- `keep-alive` 使用 `name` 缓存组件
+
+
+
+#### `nextTick` 的原理
+
+****
+
+`Vue` 会收集所有的数据更新的 `watcher` 到一个队列（宏任务），然后添加到 `nextTick` 的执行队列中去；如果这之后设置一个 `nextTick`，那这个 回调函数也会添加到 执行队列中去（宏任务）。
+
+因为这二者分属两个宏任务，所以中间会有一次 GUI 渲染，所以 DOM 会更新
+
+
+
+#### 生命周期
+
+| 生命周期      | 描述                                                         |
+| ------------- | ------------------------------------------------------------ |
+| beforeCreate  | Vue 实例刚初始化，data、methods还没初始化                    |
+| created       | data、methods 这些已经初始化，还没有渲染 DOM，$el 不可用     |
+| beforeMount   | Watcher 对象还未创建，即将执行 render 函数                   |
+| mounted       | Vue 实例初始化完毕，DOM节点挂载到 vm.$el 上                  |
+| beforeUpdate  | 发生在 patch 函数执行之前，即虚拟 DOM 更新之前，此时数据已更新（组件必须已经执行 mounted，未执行 destroyed） |
+| update        | 组件数据更新之后（组件必须已经执行 mounted，未执行 destroyed） |
+| activited     | keep-alive 组件激活时调用                                    |
+| deactivated   | keep-alive 组件销毁时调用                                    |
+| beforeDestory | 组件销毁前调用                                               |
+| destoryed     | 组件销毁后调用                                               |
+
+- 加载渲染过程
+
+> 父beforeCreate->父created->父beforeMount->子beforeCreate->子created->子beforeMount->子mounted->父mounted
+
+- 子组件更新过程
+
+> 父beforeUpdate->子beforeUpdate->子updated->父updated
+
+- 父组件更新过程
+
+> 父beforeUpdate->父updated
+
+- 销毁过程
+
+> 父beforeDestroy->子beforeDestroy->子destroyed->父destroyed
+
+#### `Proxy` 和 `Object.defineProperty` 对比
+
+- `Proxy` 直接监听对象，不用循环所有的属性，一一监听
+- `Proxy` 可以监听数组元素的变化
+- 
