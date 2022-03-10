@@ -248,39 +248,32 @@ Object.assign([], x);
 
 ```javascript
 // 完全版本，解决了：循环引用， 非JSON安全的数据类型，原型继承问题
-function deepClone(obj, cacheCurr = new WeakMap()) {
-    if([undefined, null].includes(obj)){
-        return obj
-    }
-    // 如果该对象已经创建好，则从缓存中获取直接返回
-    if (cacheCurr.has(obj)) return cacheCurr.get(obj);
-    // 通用的类型集合，方便后面统一处理:new obj.constructor(obj),所以该集合一定是要能够这样创建的才能放进来
-    const types = ['RegExp', 'Date', 'Set', 'Map', 'WeakMap', 'WeakSet'];
-    // 获取当前对象类型
-    let objDataType = Object.prototype.toString.call(obj).slice(8, -1);
-    // 对比当前类型是否在通用类型中，在则统一处理克隆。【较通用的处理方式】
-    if(types.includes(objDataType)) return new obj.constructor(obj);
-    // 创建克隆对象
-    let cloneObj = objDataType === 'Array' ? [] : {};
-    // 继承原型
-    if(obj){
-        Object.setPrototypeOf(cloneObj,Object.getPrototypeOf(obj));
-    }
-    // 普通引用类型及非引用类型克隆，Reflect.ownKeys能够获取自身所有属性【非枚举也可】
-    for(let key of Reflect.ownKeys(obj)) {
-        let value = obj[key];
-        let valueType = Object.prototype.toString.call(value).slice(8, -1);
-        // 引用类型处理
-        if(valueType === 'Object' || valueType === 'Array' || types.includes(valueType)) {
-            // 对引用类型进行递归进入当前级的下一级进行遍历
-            cloneObj[key] = deepClone(value, cacheCurr);
-            // 记录已创建引用
-            cacheCurr.set(obj, cloneObj);
-        } else { // 非引用类型处理
-            cloneObj[key] = value;
-        }
-    }
-    return cloneObj;
+function deepCopy(obj, cache = new WeakMap()) {
+  const objType = Object.prototype.toString.call(obj).slice(8, -1)
+  const basicTypes = ['Undefined', 'Null', 'Boolean', 'String', 'Number', 'BigInt', 'Symbol', 'Function']
+  if(basicTypes.includes(objType)){
+    // 基本类型
+    return obj;
+  }
+  const newObjypes = ['Map', 'Set', 'WeakMap', 'WeakSet', 'Date', 'RegExp']
+  
+  if(newObjypes.includes(objType)){
+    // 非JSON安全的内置对象
+    return new value.constructor(value)
+  }
+  if(cache.has(obj)){
+    // 循环引用
+    return cache.get(obj)
+  }
+  let copyObj = objType === 'Array' ? [] : {}
+  // 原型继承
+  Object.setPrototypeOf(copyObj, Object.getPrototypeOf(obj))
+  cache.set(obj, copyObj)
+  for(let key of Reflect.ownKeys(obj)){
+    let value = obj[key]
+    copyObj[key] = deepCopy(value, cache)
+  }
+  return copyObj
 }
 ```
 
@@ -327,6 +320,71 @@ function stringify(obj, cacheCurr = new WeakSet()){
   return str
 }
 ```
+
+
+
+#### 模拟实现 flat
+
+****
+
+```javascript
+function myFlat(arr, depth = Infinity) {
+  if(depth === 0){
+    return arr
+  }
+  let res = []
+  arr.forEach(x => {
+    if(Array.isArray(x)){
+      res.push(...myFlat(x, depth - 1))
+    }else{
+      res.push(x)
+    }
+  })
+  return res
+}
+```
+
+
+
+#### setTimeout 模拟 setIntreval
+
+```javascript
+function mySetInterval(cb, delay, ...args) {
+  let timer = null
+  let myInterval = function() {
+    timer = setTimeout(() => {
+      cb.apply(null, args)
+      myInterval()
+    }, delay)
+  }
+  myInterval()
+  return {
+    id: timer,
+    clear(){
+      clearTimeout(timer)
+    }
+  }
+}
+```
+
+
+
+#### 实现 sleep 函数
+
+```javascript
+function sleep(delay){
+  return new Promise(function(resolve, reject){
+    let start = new Date()
+    setTimeout(function(){
+      resolve(`${new Date()}, ${start}`)
+    }, delay);
+  })
+}
+```
+
+
+
+
 
 
 
@@ -634,6 +692,17 @@ Array.prototype.myFlat = function(depth){
 [] instanceof Array
 // es6
 Array[Symbol.hasInstance]([])
+
+function myInstanceof(obj, constructor){
+  if(obj === null || !['function', 'object'].includes(typeof obj)){
+    return false
+  }
+  while (obj && Object.getPrototypeOf(obj) !== constructor.prototype){
+    obj = Object.getPrototypeOf(obj)
+  }
+  return obj === null ? false : true;
+}
+
 ```
 
 
@@ -821,11 +890,3 @@ setTimeout(() => abortController.abort(), 10);
 ```
 
 
-
-#### HTTP 头部
-
-- Connection，连接类型
-- Cookie
-- Host，域名
-- Referer，发送请求的页面的 URI
-- user-Agent，浏览器的用户代理字符串
