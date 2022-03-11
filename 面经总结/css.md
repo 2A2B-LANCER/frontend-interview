@@ -485,7 +485,7 @@ section{
   .container {
       height: 500px;
       width: 100%;
-      overflow: hidden;
+      overflow: hidden;  
   }
   .container > div {
       height: 100%;
