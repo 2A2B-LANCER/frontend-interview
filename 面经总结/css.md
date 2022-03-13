@@ -147,7 +147,7 @@ box-sizing 的两个属性，代表两个盒模型尺寸
 
 ##### 选择器优先级
 
-- 优先级由高到低：!important > 内联样式 > id选择器 > 类选择器 > 标签选择器 > 通配符选择器 > 继承
+- 优先级由高到低：!important > 内联样式 > id选择器 > 类选择器 > 标签选择器 > 通配符选择器 > 继承 > 默认
 
 - 优先级权重
 
@@ -170,8 +170,8 @@ box-sizing 的两个属性，代表两个盒模型尺寸
   </style>
   ```
 
-  - 标签选择器：1
-  - 类选择器：10
+  - 标签选择器、伪元素选择器：1
+  - 类选择器、属性选择器、伪类选择器：10
   - id 选择器：100
   - 内联样式：1000
 
@@ -601,8 +601,9 @@ section{
 作用：
 
 - 避免 `margin` 重叠（分属两个 BFC 即可）
-- 自适应两栏布局
+- 避免某元素被浮动元素覆盖
 - 清除浮动（BFC 计算高度的时候会算上浮动元素）
+- 避免多列布局由于宽度计算四舍五入而自动换行
 
 如何激活 BFC
 
@@ -677,44 +678,36 @@ content、padding、border
 
 
 
-#### 重绘与回流
-
-HTML 渲染过程
-
-1. 解析 HTML 文档构建 DOM 树
-2. 解析 CSS 文档构建 CSSOM 树
-3. 将二者关联，构建 Render Tree
-4. 按照 Render Tree 进行布局， GPU 绘制页面
-
-回流：
-
-- 布局变化
-- 浏览器窗口尺寸变化
-- 新增删除可见元素
-- 内容变化
-- 字体大小变化
-- 激活 CSS 伪类
-- 设置 Style 属性
-- 查询 offsetTop 这些属性
-- 调用getComputedStyle方法
-
-重绘：只更改元素外观
-
-**回流必定重绘，重绘不一定回流，前者开销大**
-
-
-
-#### 如何减少重绘与回流
-
-- 使用 `translate` 代替 `top、bottom、left、right` 
-- `visibility` 代替 `display:none`，前者重绘，后者回流
-- 先把 DOM 离线（比如 `display:none`），统一修改，再显示出来
-- 不在循环中频繁获取 DOM 节点的属性值
-- 不使用 table 布局
-- 频繁运行的动画改为图层
-
-
-
 #### 两个嵌套的 div，position 都是 absolute，子 div 设置 top 属性，那么这个 top 是相对于父元素的哪个位置定位的
 
 border 的内边缘
+
+
+
+#### flex
+
+容器属性：
+
+- `flex-flow`：以下两个属性的简写
+  - `flex-direction`：主轴方向（默认值为 `row`）
+    - `row`：与文本方向相同，起点和终点与内容方向相同
+    - `row-reverse`：与文本方向相同，起点和终点与内容方向相反
+    - `column`：与块轴方向相同，起点和终点与块轴方向相同
+    - `column`：与块轴方向相同，起点和终点与块轴方向相反
+  - `flex-wrap`：是否换行（默认值 `nowrap`）
+    - `nowrap`：不换行，单行显示
+    - `wrap`：自动换行，靠左靠右按照 `flex-direction` 决定
+    - `wrap-reverse`：自动换行，靠左靠右和 `flex-direction` 相反
+- `justify-content`：水平轴线方向的对齐方式
+- `align-items`：竖直轴线方向的对齐方式
+- `align-content`：效果和 `align-items` 类似，但是 `flex-wrap: nowrap` 的无效
+
+容器内项目的属性：
+
+- `flex`：以下三个属性的简写（默认值都是 0）
+  - `flex-grow`：放大比例，0就是不放大（无单位）
+  - `flex-shrink`：缩小比例，0就是不缩小（无单位）
+  - `flex-basis`：默认尺寸（长度单位）
+- `align-self`：设置单个项目的对齐方式
+- `order`：项目的排列顺序
+- `align-items`：竖直轴线方向的对齐方式
