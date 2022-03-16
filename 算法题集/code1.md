@@ -176,7 +176,7 @@ function sortGB(arr){
 
 返回能走出来的最长的递增链长度
 
-> https://leetcode-cn.com/problems/longest-increasing-path-in-a-matrix/submissions/
+> https://leetcode-cn.com/problems/longest-increasing-path-in-a-matrix/
 
 经典暴力递归转记忆化搜索
 
@@ -288,7 +288,7 @@ function leastAoe(x, hp, range){
 
 在给定一个数字 target，请问最后算出 target 的方法数是多少
 
-> https://leetcode-cn.com/problems/target-sum/submissions/
+> https://leetcode-cn.com/problems/target-sum/
 
 ```javascript
 // 记忆化搜索
