@@ -15,7 +15,7 @@
 
 ****
 
-关键点就是数据劫持和发布-订阅模式
+关键点就是数据劫持和观察者 模式
 
 1. 数据劫持，通过 `Observer` 对象，递归遍历需要被监听的对象，都加上 `getter` 和 `setter`
 2. `Dep` 对象就是发布者
@@ -157,4 +157,3 @@ Object.assign(this.$data, this.$options.data.call(this))
 
 - `Proxy` 直接监听对象，不用循环所有的属性，一一监听
 - `Proxy` 可以监听数组元素的变化
-- 

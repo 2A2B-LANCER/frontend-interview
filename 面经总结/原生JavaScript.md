@@ -97,6 +97,24 @@
 
 
 
+> 怎样算同站（sameSite），怎样算跨站（crossSite）？
+>
+> 比如 `a.taobao.com` 和 `b.taobao.com`就是同站；`a.github.io` 和 `b.github.io` 就是跨站。
+>
+> 这又牵扯到一个概念，公共后缀（[公共后缀表](https://publicsuffix.org/list/public_suffix_list.dat)）
+>
+> **名称 + 公共后缀 共同表示一个网站**
+>
+> `com` 和 `github.io` 都是公共后缀；
+>
+> 所以 `taobao` 就是那个名称 `a.taobao.com` 和 `b.taobao.com` 都是 `taobao.com` 这个网站下面的子域名。所以他们是同站；
+>
+> `a.github.io` 和 `b.github.io` 的名称不同，只是使用了相同的公共后缀，所以是跨站。
+>
+> 但是判断同跨站还需要 **协议**
+>
+> 比如 `http://a.taobao.com` 和 `https://a.taobao.com` 也属于跨站
+
 ##### Service Worker
 
 > https://juejin.cn/post/6844904052166230030#heading-8
